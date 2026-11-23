@@ -1,9 +1,9 @@
 # Roadmap
-- [x] Tahap 1a: repo, skema DB, seed, logika keuangan + test
-- [ ] Tahap 1b: Next.js + Tailwind, Supabase Auth, RBAC (owner/manager/cashier)
-- [ ] Tahap 2: Dashboard & filter periode
-- [ ] Tahap 3: POS, keranjang, pembayaran, struk, riwayat, void/refund
-- [ ] Tahap 4: Pemasukan, pengeluaran, laporan
-- [ ] Tahap 5: Inventaris, resep, supplier, pembelian
-- [ ] Tahap 6: Shift, meja, notifikasi
-- [ ] Tahap 7: Export, backup, PWA offline (idempotency key), optimasi
+- [x] Fondasi repo, skema DB, logika keuangan + test
+- [x] Pratinjau antarmuka tema PLACE #1 (tanpa pajak, ada diskon)
+- [x] Migration 002-004: hapus pajak, profiles + RLS, create_sale/refund_sale atomik + idempotent
+- [ ] Migration berikutnya: varian menu, pembelian/supplier (RPC), shift (buka/tutup), Storage + policy, fungsi laporan
+- [ ] Next.js + TypeScript + Tailwind, Supabase Auth (@supabase/ssr), halaman sesuai pratinjau
+- [ ] POS, dashboard, laporan terhubung database
+- [ ] PWA + antrean offline (status MENUNGGU SINKRONISASI)
+- [ ] Deploy Vercel

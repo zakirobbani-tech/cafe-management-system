@@ -5,14 +5,19 @@ import { formatIDR } from '../src/utils/money.js';
 
 test('format Rupiah', () => { assert.equal(formatIDR(22000), 'Rp22.000'); assert.equal(formatIDR(1500000), 'Rp1.500.000'); });
 test('uang non-integer ditolak', () => assert.throws(() => formatIDR(10.5)));
-test('order: diskon, service 5%, pajak 11%', () => {
-  const o = f.computeOrder({ items: [{ price: 22000, qty: 2 }], orderDiscount: 4000, serviceBp: 500, taxBp: 1100 });
-  assert.deepEqual(o, { subtotal: 44000, discount: 4000, service: 2000, tax: 4620, total: 46620 });
+test('tanpa pajak: Rp22.000 + Rp18.000 = Rp40.000', () => {
+  const o = f.computeOrder({ items: [{ price: 22000, qty: 1 }, { price: 18000, qty: 1 }] });
+  assert.deepEqual(o, { subtotal: 40000, discount: 0, total: 40000 });
+  assert.equal('tax' in o || 'service' in o, false);
+});
+test('diskon mengurangi total; diskon berlebih ditolak', () => {
+  assert.equal(f.computeOrder({ items: [{ price: 40000, qty: 1 }], orderDiscount: 5000 }).total, 35000);
+  assert.throws(() => f.computeOrder({ items: [{ price: 1000, qty: 1 }], orderDiscount: 2000 }));
 });
 test('kembalian, pembayaran kurang, split', () => {
-  assert.equal(f.changeDue(46620, [{ amount: 50000 }]), 3380);
-  assert.throws(() => f.changeDue(46620, [{ amount: 40000 }]));
-  assert.equal(f.changeDue(46620, [{ amount: 30000 }, { amount: 20000 }]), 3380);
+  assert.equal(f.changeDue(40000, [{ amount: 50000 }]), 10000);
+  assert.throws(() => f.changeDue(40000, [{ amount: 30000 }]));
+  assert.equal(f.changeDue(40000, [{ amount: 25000 }, { amount: 20000 }]), 5000);
 });
 test('omzet bersih: pending/cancelled out, refund mengurangi', () => {
   const txs = [

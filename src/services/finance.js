@@ -1,15 +1,12 @@
-import { rupiah, bpOf } from '../utils/money.js';
+import { rupiah } from '../utils/money.js';
 const sum = (a, f = (x) => x) => a.reduce((s, x) => s + f(x), 0);
 
-/** items: [{price, qty, discount}]; rate dalam basis points. Service dihitung sebelum pajak. */
-export function computeOrder({ items, orderDiscount = 0, serviceBp = 0, taxBp = 0 }) {
+/** items: [{price, qty, discount}]. Tanpa pajak dan tanpa service charge. */
+export function computeOrder({ items, orderDiscount = 0 }) {
   const subtotal = sum(items, (i) => rupiah(i.price) * i.qty);
-  const itemDiscount = sum(items, (i) => rupiah(i.discount || 0));
-  const base = subtotal - itemDiscount - rupiah(orderDiscount);
-  if (base < 0) throw new RangeError('Diskon melebihi subtotal');
-  const service = bpOf(base, serviceBp);
-  const tax = bpOf(base + service, taxBp);
-  return { subtotal, discount: itemDiscount + orderDiscount, service, tax, total: base + service + tax };
+  const discount = sum(items, (i) => rupiah(i.discount || 0)) + rupiah(orderDiscount);
+  if (discount > subtotal) throw new RangeError('Diskon melebihi subtotal');
+  return { subtotal, discount, total: subtotal - discount };
 }
 export function changeDue(total, payments) {
   const paid = sum(payments, (p) => rupiah(p.amount));
