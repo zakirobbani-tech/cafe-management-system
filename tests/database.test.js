@@ -9,7 +9,7 @@ const OWNER = '11111111-1111-1111-1111-111111111111', CASH = '22222222-2222-2222
 test('database: transaksi tanpa pajak, stok atomik, idempotensi, RLS', async () => {
   const db = new PGlite();
   for (const f of ['tests/helpers/supabase_stub.sql', 'database/migrations/001_init.sql', 'database/migrations/002_remove_tax.sql',
-    'database/migrations/003_auth_profiles_rls.sql', 'database/migrations/004_sales_functions.sql', 'database/seed/001_demo.sql']) await db.exec(sql(f));
+    'database/migrations/003_auth_profiles_rls.sql', 'database/migrations/004_sales_functions.sql', 'database/migrations/005_categories_restock.sql', 'database/seed/001_demo.sql']) await db.exec(sql(f));
   const q = async (s, p) => (await db.query(s, p)).rows;
   const n = async (s, p) => Number((await q(s, p))[0].v);
   const as = async (uid) => { await db.exec('RESET ROLE'); await db.exec(uid ? `SET test.uid='${uid}'; SET ROLE authenticated` : `SET test.uid=''; SET ROLE anon`); };
@@ -50,6 +50,7 @@ test('database: transaksi tanpa pajak, stok atomik, idempotensi, RLS', async () 
   await as(CASH);
   assert.equal(await n('select count(*) as v from transactions'), 1);
   await assert.rejects(q('select refund_sale(1,$1)', ['salah input']), /Tidak berwenang/);
+  await assert.rejects(q('select restock_ingredient(1,10,1000)'), /Tidak berwenang/);
   await assert.rejects(db.exec("UPDATE profiles SET role='owner' WHERE id='" + CASH + "'"), /Hanya owner/);
   await assert.rejects(db.exec("INSERT INTO transactions(number,status,order_type,subtotal,total) VALUES ('X','paid','dine_in',1,1)"), /row-level security|permission denied/);
   await as(OWNER);
@@ -58,8 +59,13 @@ test('database: transaksi tanpa pajak, stok atomik, idempotensi, RLS', async () 
   await q('select refund_sale($1,$2)', [Number(r1.id), 'salah input']);
   assert.equal(await kopi(), before + 36);
   assert.equal((await q('select status from transactions where id=$1', [Number(r1.id)]))[0].status, 'refunded');
+  const k0 = await kopi();
+  await q('select restock_ingredient($1,$2,$3)', [Number((await q("select id from ingredients where name='Biji Kopi'"))[0].id), 1000, 200000]);
+  assert.equal(await kopi(), k0 + 1000);
   await as(null);
   await assert.rejects(db.exec('select * from menus'), /permission denied/);
   await db.exec('RESET ROLE');
   await assert.rejects(db.exec("INSERT INTO transactions(number,status,order_type,subtotal,tax,total) VALUES ('Y','paid','dine_in',100,10,110)"), /transactions_no_tax_chk/);
+  await db.exec('RESET ROLE'); await db.exec(sql('database/seed/002_place1_menu_estimasi.sql'));
+  assert.equal(await n("select count(*) as v from menus where category='Kopi'"), 8);
 });

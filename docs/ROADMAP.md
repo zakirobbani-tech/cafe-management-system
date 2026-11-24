@@ -3,7 +3,10 @@
 - [x] Pratinjau antarmuka tema PLACE #1 (tanpa pajak, ada diskon)
 - [x] Migration 002-004: hapus pajak, profiles + RLS, create_sale/refund_sale atomik + idempotent
 - [ ] Migration berikutnya: varian menu, pembelian/supplier (RPC), shift (buka/tutup), Storage + policy, fungsi laporan
-- [ ] Next.js + TypeScript + Tailwind, Supabase Auth (@supabase/ssr), halaman sesuai pratinjau
-- [ ] POS, dashboard, laporan terhubung database
+- [x] Next.js + TypeScript, Supabase Auth (@supabase/ssr), login + role
+- [x] Dashboard, Kasir (create_sale), Transaksi (refund_sale), Stok (restock_ingredient) terhubung database
+- [ ] Halaman Menu & Resep (CRUD), Bahan (CRUD), Supplier & Pembelian
+- [ ] Pengeluaran, Pemasukan manual, Laporan harian/bulanan/tahunan + export
+- [ ] Karyawan (kelola akun), Shift kasir, Pengaturan kafe, Tailwind (saat ini memakai CSS dari pratinjau)
 - [ ] PWA + antrean offline (status MENUNGGU SINKRONISASI)
 - [ ] Deploy Vercel
